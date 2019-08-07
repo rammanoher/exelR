@@ -1,0 +1,98 @@
+library(forecast)
+library(fpp)
+library(smooth)
+# Loading plastic sales Data
+library(readxl)
+library(readr)
+plasales<-read.csv(file.choose()) # plastic sales
+#View(plasales)
+library(tseries)
+
+# Converting data into time series object
+psales<-ts(plasales$Sales,frequency = 12,start=c(49))
+View(psales)
+
+# dividing entire data into training and testing data 
+train<-psales[1:48]
+test<-psales[49:60] 
+
+# converting time series object
+train<-ts(train,frequency = 12)
+test<-ts(test,frequency = 12)
+
+# Plotting time series data
+plot(psales) # Visualization shows that it has level, trend, seasonality => Additive seasonality
+
+#### USING HoltWinters function ################
+# Optimum values
+# with alpha = 0.2 which is default value
+# Assuming time series data has only level parameter
+hw_a<-HoltWinters(train,alpha = 0.2,beta = F,gamma = F)
+hw_a #Coefficients:1369.10
+
+hwa_pred<-data.frame(predict(hw_a,n.ahead=12))
+# By looking at the plot the forecasted values are not showing any characters of train data 
+plot(forecast(hw_a,h=12))
+hwa_mape<-MAPE(hwa_pred$fit,test)*100
+
+# with alpha = 0.2, beta = 0.1
+# Assuming time series data has level and trend parameter 
+hw_ab<-HoltWinters(train,alpha = 0.2,beta = 0.1,gamma = F)
+hw_ab 
+# Coefficients: #a: 1429.58, #b:17.94
+
+hwab_pred<-data.frame(predict(hw_ab,n.ahead = 12))
+# by looking at the plot the forecasted values are still missing some characters exhibited by train data
+plot(forecast(hw_ab,h=12))
+hwab_mape<-MAPE(hwab_pred$fit,test)*100
+
+# with alpha = 0.2, beta = 0.1, gamma = 0.1 
+# Assuming time series data has level,trend and seasonality 
+hw_abg<-HoltWinters(train,alpha = 0.2,beta = 0.1,gamma = 0.1)
+hw_abg #coefficients: a: 4188.08, b: 98.91, s1: -250.03, s2: -310.05, s3: -243.57, s4: -94.37
+#s5: 60.97, s6: 178.27, s7: 199.36, s8: 55.94, s9: 252.20, s10: 181.70, s11: -4.91, s12: -197.25
+
+hwabg_pred<-data.frame(predict(hw_abg,n.ahead = 12))
+# by looking at the plot the characters of forecasted values are closely following historical data
+plot(forecast(hw_abg,h=12))
+hwabg_mape<-MAPE(hwabg_pred$fit,test)*100
+
+# With out optimum values 
+hw_na<-HoltWinters(train,beta = F,gamma = F)
+hw_na #coefficients: 1209.01 , alpha va;ue: 0.99
+
+hwna_pred<-data.frame(predict(hw_na,n.ahead = 12))
+hwna_pred
+plot(forecast(hw_na,h=12))
+hwna_mape<-MAPE(hwna_pred$fit,test)*100
+
+hw_nab<-HoltWinters(train,gamma=F)
+hw_nab #coefficients: a: 1209, b: -2.50 , alpha: 1, beta: 0.053
+hwnab_pred<-data.frame(predict(hw_nab,n.ahead=12))
+hwnab_pred
+plot(forecast(hw_nab,h=12))
+hwnab_mape<-MAPE(hwnab_pred$fit,test)*100
+
+hw_nabg<-HoltWinters(train)
+hw_nabg #coefficients: a: 1412.10, b: 7.64 , s1: -245.31, s2: -315.20, s3: -238.16, s4: -86.76 
+#s5:63.15, s6:182.19, s7:202.10, s8:262.20, s9: 258.34, s10:188.93, s11: -28.57, s12: -201.74,alpha: 0.78, beta: 0, gamma: 0.81
+hwnabg_pred<-data.frame(predict(hw_nabg,n.ahead =12))
+hwnabg_pred
+plot(forecast(hw_nabg,h=12))
+hwnabg_mape<-MAPE(hwnabg_pred$fit,test)*100
+############################## STOP HERE ###############################
+
+df_mape<-data.frame(c("hwa_mape","hwab_mape","hwabg_mape","hwna_mape","hwnab_mape","hwnabg_mape"),c(hwa_mape,hwab_mape,hwabg_mape,hwna_mape,hwnab_mape,hwnabg_mape))
+
+colnames(df_mape)<-c("MAPE","VALUES")
+View(df_mape)
+
+# Based on the MAPE value who choose holts winter exponential tecnique which assumes the time series
+# Data level, trend, seasonality characters with default values of alpha, beta and gamma
+
+new_model <- HoltWinters(psales)
+
+plot(forecast(new_model,n.ahead=12))
+
+# Forecasted values for the next 12 months
+forecast_new <- data.frame(predict(new_model,n.ahead=12))
