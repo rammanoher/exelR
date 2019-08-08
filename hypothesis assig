@@ -1,0 +1,98 @@
+library(readr)
+library(readxl)
+cutlet_data <- read.csv(file.choose())
+
+#####Cutlet case study#####
+
+###normality test##
+
+#Ho = data is normal 
+#Ha = data is not normal
+
+attach(cutlet_data)
+
+shapiro.test(Unit.A) #p value is 0.32 greater than alpha value(0.05)
+#p high Ho fly, data follows normaldistribution
+
+shapiro.test(Unit.B) #p value is 0.5225 grater than alpha value(0.05)
+#p high Ho fly, data follows normaldistribution
+
+##variance test##
+
+#Ho: Variances are same
+#Ha: Variances are different
+
+var.test(Unit.A,Unit.B)
+# p= 0.3136 greater than alpha value(0.05)
+#p high Ho fly, eaual variance
+
+##2-sample T test##
+
+#Ho: no significance difference in diameter
+#ha: significance difference in diameter
+
+t.test(Unit.A,Unit.B, alternative = "two.sided", conf.level = 0.95,correct=TRUE)
+#p= 0.4723 > 0.05=> p high Ho fly=> no significance difference in diameter
+
+
+####Fantaloons case study########
+
+fantaloons <- read.csv(file.choose())
+View(fantaloons)
+attach(fantaloons)
+table1 <- table(Weekdays)
+table1
+table2 <- table(Weekend)
+table2
+
+##2-prportion test##
+#Ho: equal proportion
+#Ha: uneqal proportion
+
+prop.test(x=c(113,167), n=c(400,400), conf.level = 0.95, correct = FALSE, alternative = "two.sided")
+#p value= 6.261e-05< 0.05=>p low Ho go=> unequal proportion(reject Ho)
+
+prop.test(x=c(113,167), n=c(400,400), conf.level = 0.95, correct = FALSE, alternative = "greater")
+
+#Ho:proportion of males in weekdays < proportion of males in weekends
+#Ha:proportion of males in weekdays > proportion of males in weekends
+
+#p value= 1> 0.05=>p high Ho fly=> fail to reject Ho=> proportion of males in weekdays < proportion of males in weekends
+
+
+
+######customerorderform case study#######
+
+customer_order <- read.csv(file.choose())
+View(customer_order)
+attach(customer_order)
+
+
+table(country,Defective)
+
+#Ho: All proportions are equal
+#Ha: Not all proportions are equal
+
+chisq.test(table(country,Defective))
+#p= 0.2771>0.05=> p high Ho fly=> Fail to reject Ho=> All proportions are equal
+#All centres are having equal proportion
+
+
+
+######Buyer ratio case study#######
+
+buyer_ratio <- read.csv(file.choose())
+View(buyer_ratio)
+attach(buyer_ratio)
+
+maleobs= c(50,142,131,70)
+femaleobs= c(435,1523,1356,750)
+
+#Ho: All proportions are equal
+#Ha: Not all proportions are equal
+
+chisq.test(data.frame(maleobs,femaleobs))
+#p= 0.6603>0.05=> p high Ho fly=> Fail to reject Ho=> All proportions are equal
+#male-female buyer ratios are similar across the regions
+
+
